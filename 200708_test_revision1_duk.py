@@ -139,6 +139,19 @@ class MyWindow(QWidget):
         summaryLayout.addRow("Return Ratio : ", self.returnRatio)
         summaryLayout.addRow("std. Return Ratio : ", self.varLabel)
 
+        dividendLayout = QFormLayout()
+        self.dividendRate = QLabel("-")
+        self.twoTimeScale = QLabel("-")
+        self.fourTimeScale = QLabel("-")
+        self.eightTimeScale = QLabel("-")
+        self.sixteenTimeScale = QLabel("-")
+
+        dividendLayout.addRow("Dividend Rate : ", self.dividendRate)
+        dividendLayout.addRow("Two times for Init : ", self.twoTimeScale)
+        dividendLayout.addRow("Four times for Init : ", self.fourTimeScale)
+        dividendLayout.addRow("Eight times for Init : ", self.eightTimeScale)
+        dividendLayout.addRow("Sixteen times for Init : ", self.sixteenTimeScale)
+
         groupLayout = QVBoxLayout()
         groupLayout2 = QVBoxLayout()
         simLayout = QHBoxLayout()
@@ -146,6 +159,7 @@ class MyWindow(QWidget):
         groupLayout.addWidget(self.simultableWidget)
         groupLayout.addWidget(self.dailyEstiTable)
         groupLayout2.addLayout(summaryLayout)
+        groupLayout2.addLayout(dividendLayout)
         simLayout.addLayout(groupLayout)
         simLayout.addLayout(groupLayout2)
 
