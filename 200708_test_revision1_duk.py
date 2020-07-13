@@ -9,6 +9,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import pandas_datareader.data as web
 import pandas as pd
 import numpy as np
+import math
 
 from pandas import Series, DataFrame
 
@@ -145,12 +146,16 @@ class MyWindow(QWidget):
         self.fourTimeScale = QLabel("-")
         self.eightTimeScale = QLabel("-")
         self.sixteenTimeScale = QLabel("-")
+        self.thirtytwoTimeScale = QLabel("-")
+        self.sixtyfourTimeScale = QLabel("-")
 
         dividendLayout.addRow("Dividend Rate : ", self.dividendRate)
-        dividendLayout.addRow("Two times for Init : ", self.twoTimeScale)
-        dividendLayout.addRow("Four times for Init : ", self.fourTimeScale)
-        dividendLayout.addRow("Eight times for Init : ", self.eightTimeScale)
-        dividendLayout.addRow("Sixteen times for Init : ", self.sixteenTimeScale)
+        dividendLayout.addRow("init×2(Y/F/Dm) : ", self.twoTimeScale)
+        dividendLayout.addRow("init×4(Y/F/Dm) : ", self.fourTimeScale)
+        dividendLayout.addRow("init×8(Y/F/Dm) : ", self.eightTimeScale)
+        dividendLayout.addRow("init×16(Y/F/Dm) : ", self.sixteenTimeScale)
+        dividendLayout.addRow("init×32(Y/F/Dm) : ", self.thirtytwoTimeScale)
+        dividendLayout.addRow("init×64(Y/F/Dm) : ", self.sixtyfourTimeScale)
 
         groupLayout = QVBoxLayout()
         groupLayout2 = QVBoxLayout()
@@ -236,17 +241,54 @@ class MyWindow(QWidget):
             self.dailyEstiTable.setItem(row, 4, QTableWidgetItem("{0:.2f}%".format(logReturnRatio)))
             oldAssetValue = assetValue
 
+        meanLogReturn = np.mean(logReturnData)
+        meanLogReturnByYear = meanLogReturn * 365
         stdLogReturn = np.std(logReturnData)
         stdLogReturnByYear = stdLogReturn * 365
-        #self.varLabel.setText("{0:.2f}%".format(stdLogReturn))
         self.varLabel.setText("{0:.2f}% ({1:.2f}% per year)".format(stdLogReturn, stdLogReturnByYear))
         LogReturnYear = (np.array(logReturnData) * 365).tolist()
+
+        #-배당금 계산
+        twoTimePeriod = math.log(2, 1 + meanLogReturnByYear/100)
+        dividendRate = 0.1
+        self.dividendRate.setText("{0:.2f}%".format(dividendRate * 100))
+
+        twoTimeScale = int(self.fundEdit.text()) * 2
+        dividendScale = twoTimeScale * dividendRate
+        dividendScaleM = dividendScale / twoTimePeriod / 12
+        self.twoTimeScale.setText("{0:.2f} / {1:,.0f} / {2:,.0f}".format(twoTimePeriod, twoTimeScale, dividendScaleM))
+
+        fourTimeScale = (1-dividendRate) * twoTimeScale * 2
+        dividendScale = fourTimeScale * dividendRate
+        dividendScaleM = dividendScale / twoTimePeriod / 12
+        self.fourTimeScale.setText("{0:.2f} / {1:,.0f} / {2:,.0f}".format(twoTimePeriod*2, fourTimeScale, dividendScaleM))
+
+        eightTimeScale = (1-dividendRate) * fourTimeScale * 2
+        dividendScale = eightTimeScale * dividendRate
+        dividendScaleM = dividendScale / twoTimePeriod / 12
+        self.eightTimeScale.setText("{0:.2f} / {1:,.0f} / {2:,.0f}".format(twoTimePeriod*3, eightTimeScale, dividendScaleM))
+
+        sixteenTimeScale = (1-dividendRate) * eightTimeScale * 2
+        dividendScale = sixteenTimeScale * dividendRate
+        dividendScaleM = dividendScale / twoTimePeriod / 12
+        self.sixteenTimeScale.setText("{0:.2f} / {1:,.0f} / {2:,.0f}".format(twoTimePeriod*4, sixteenTimeScale, dividendScaleM))
+
+        thirtytwoTimeScale = (1 - dividendRate) * sixteenTimeScale * 2
+        dividendScale = thirtytwoTimeScale * dividendRate
+        dividendScaleM = dividendScale / twoTimePeriod / 12
+        self.thirtytwoTimeScale.setText("{0:.2f} / {1:,.0f} / {2:,.0f}".format(twoTimePeriod*5, thirtytwoTimeScale, dividendScaleM))
+
+        sixtyfourTimeScale = (1 - dividendRate) * thirtytwoTimeScale * 2
+        dividendScale = sixtyfourTimeScale * dividendRate
+        dividendScaleM = dividendScale / twoTimePeriod / 12
+        self.sixtyfourTimeScale.setText("{0:.2f} / {1:,.0f} / {2:,.0f}".format(twoTimePeriod*6, sixtyfourTimeScale, dividendScaleM))
+
         plt.cla()
         plt.plot(gs.index, LogReturnYear, color='#052962', linewidth=1, alpha=.4)
-        plt.plot(gs.index, [np.mean(logReturnData) * 365] * len(gs.index), color='#cc0a11', linewidth=1, alpha=.8)
-        plt.plot(gs.index, [(np.mean(logReturnData) + stdLogReturn * 1.96) * 365] * len(gs.index), linewidth=1,
+        plt.plot(gs.index, [meanLogReturnByYear] * len(gs.index), color='#cc0a11', linewidth=1, alpha=.8)
+        plt.plot(gs.index, [(meanLogReturn + stdLogReturn * 1.96) * 365] * len(gs.index), linewidth=1,
                  color="gray", alpha=.8)
-        plt.plot(gs.index, [(np.mean(logReturnData) - stdLogReturn * 1.96) * 365] * len(gs.index), linewidth=1,
+        plt.plot(gs.index, [(meanLogReturn - stdLogReturn * 1.96) * 365] * len(gs.index), linewidth=1,
                  color="gray", alpha=.8)
         plt.show()
 
